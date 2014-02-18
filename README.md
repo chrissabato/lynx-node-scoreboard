@@ -7,8 +7,8 @@ Node Setup
 + install node.js
 + add node to PATH
 + create a folder for you Node project (c:\node)
-+ install socket.io node.js module
-  must be in the same directory as the node project
++ install socket.io node.js module 
+  + must be in the same directory as the node project
 
 FinishLynx Setup
 --------------------
@@ -18,4 +18,4 @@ FinishLynx Setup
 Run
 --------------------
 + start the node upd/http server
-  node lynx.js
+  + node lynx.js
