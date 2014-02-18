@@ -1,0 +1,372 @@
+; Defaults: 9600,8,N,1
+;
+; Lynx Scoreboard Script Version 2.0
+;
+; Copyright (c) 1995-2002 Lynx System Developers, Inc.
+;
+; Written by Kirk Sigel
+;
+; script updated for FinishLynx 4 by Todd Chamoy 11/20/2001
+;
+; Notes:
+;  + Empty lines and lines that start with a semicolon are ignored.
+;
+;  + Lines that start with two semicolons indicate a section header.
+;    The current section headers and their valid group codes are:
+;      ;;Initialization
+;        \10 \13 \17
+;      ;;TimeRunning
+;      ;;TimeStopped
+;      ;;TimeGun
+;      ;;TimeBreak
+;      ;;TimeUpdate
+;      ;;TimeOfDay
+;        \11 \13 \17
+;      ;;Wind
+;        \12 \13 \17
+;      ;;ResultsHeader
+;      ;;ResultsTrailer
+;      ;;StartListHeader
+;      ;;StartListTrailer
+;        \13 \17
+;      ;;Result
+;      ;;StartList
+;        \13 \14 \17
+;      ;;MessageHeader
+;      ;;MessageTrailer
+;        \13 \15 \17
+;      ;;Message
+;        \13 \15 \16 \17
+;    Sections may be omitted, appear in any order, and occur more than once.
+;
+;  + Format lines must begin with a one byte group code and a one byte
+;    variable code. The special variable code \00 indicates that no variable
+;    is being requested. If a variable is requested it will be inserted where
+;    a '%s' printf style format specifier appears. There can only be one '%s'
+;    specifier in lines requesting a variable and no other printf format
+;    specifiers may appear. Remember, lines requesting a variable are used as
+;    a printf format string and therefore must behave as such. Lines not 
+;    requesting a variable (variable code \00) can do whatever they want as
+;    these lines are not fed to a printf statement.
+;    The current group codes and their variable codes are:
+;      \10  Initialize
+;         \00  No variable
+;      \11  Time
+;         \00  No variable
+;         \01  Formatted time
+;         \02  Binary time in milliseconds (4 byte little endian integer)
+;      \12  Wind
+;         \00  No variable
+;         \01  Formatted wind
+;         \02  Binary wind in hundredths of units (4 byte little endian integer)
+;      \13  Results Header/Trailer
+;         \00  No variable
+;         \01  OFFICIAL/UNOFFICIAL string
+;         \02  Event name
+;         \03  Wind
+;         \04  Event number
+;         \05  Round number
+;         \06  Heat number
+;         \07  AUTO/MANUAL start type
+;         \08  Number of participants
+;      \14  Result
+;         \00  No variable
+;         \01  Place
+;         \02  Lane
+;         \03  Id
+;         \04  Name
+;         \05  Affiliation
+;         \06  Time
+;         \07  Delta Time
+;         \08  Cumulative Split Time
+;         \09  Last Split Time
+;         \0a  Laps To Go
+;         \0b  License
+;         \0c  ReacTime
+;         \0d  Speed
+;         \0e  Pace
+;         \0f  Best Split Time
+;      \15  Message Header/Trailer
+;         \00  No variable
+;      \16  Message
+;         \00  No variable
+;         \01  Text
+;      \17  Break Time
+;         \00  No variable
+;         \nn  Formatted break time nn
+;
+;  + Arbitrary 8 bit values are entered as \hh where h is a lowercase hex
+;    digit. Note that h must be lowercase.
+;
+;  + Format lines can have the following commands embedded in them.
+;    Note that only 10 registers (indexed 0-9) are currently implemented.
+;     \U\hh   Set the 'U' value to hh. It is reset after the next command.
+;     \Ui\hh  Set the 'U' value to register[hh].
+;     \X\hh   Set the 'X' value to hh. It is reset after the next command.
+;     \Xi\hh  Set the 'X' value to register[hh].
+;     \=\hh   register[hh] = {register[U]|X|1}                 (assign)
+;     \*\hh   register[hh] = register[hh] * {register[U]|X|1}  (multiply)
+;     \/\hh   register[hh] = register[hh] / {register[U]|X|1}  (divide)
+;     \#\hh   register[hh] = register[hh] # {register[U]|X|1}  (modulus)
+;     \+\hh   register[hh] = register[hh] + {register[U]|X|1}  (add)
+;     \-\hh   register[hh] = register[hh] - {register[U]|X|1}  (subtract)
+;     \<\hh   register[hh] = register[hh] << {register[U]|X|1} (shift left)
+;     \>\hh   register[hh] = register[hh] >> {register[U]|X|1} (shift right)
+;     \&\hh   register[hh] = register[hh] & {register[U]|X|1}  (bit and)
+;     \|\hh   register[hh] = register[hh] | {register[U]|X|1}  (bit or)
+;     \^\hh   register[hh] = register[hh] ^ {register[U]|X|1}  (bit xor)
+;     \~\hh   register[hh] = ~register[hh]                     (bit invert)
+;     \F\hh   register[hh] = The result of running Function {U|0} on the 
+;             next {X|<eol>} characters.
+;              \U\00  IDS checksum.
+;              \U\01  XOR checksum. register[hh] is used as the seed value.
+;              \U\02  ADD checksum. register[hh] is used as the seed value.
+;              \U\03  CRC-16. register[hh] is used as the seed value
+;                       and register[hh+1] is the polynomial.
+;              \U\04  CRC-32. register[hh] is used as the seed value
+;                       and register[hh+1] is the polynomial.
+;     \O\hh   Output register[hh] as an {X|1} byte value using method {U|0}.
+;              \U\00  Binary little-endian (Intel byte order).
+;              \U\01  Binary big-endian (Motorola byte order).
+;              \U\02  ASCII text right justified space padded.
+;              \U\03  ASCII text right justified zero padded.
+;              \U\04  ASCII text left justified space padded.
+;              \U\05  ASCII text left justified zero padded.
+;     \S\hh   Scan the next {X|1} bytes into register[hh] using method {U|0}.
+;              \U\00  ASCII text base 10.
+;              \U\01  Binary little-endian (Intel byte order).
+;              \U\02  Binary big-endian (Motorola byte order).
+;     \P\hh   Run Procedure hh on the next {X|<eol>} characters.
+;              \P\00  Reverse characters.
+;              \P\01  Convert characters to Colorado Time format. Register[1]
+;                       is the current character position on entry and the
+;                       next character position on exit.
+;              \P\02  Convert characters to Daktronics AllSport format.
+;     \B\hh   Delete {register[U]|hh} (to beginning of line if zero) characters 
+;             before the cursor or until the string contains X characters.
+;     \D\hh   Delete {register[U]|hh} (to end of line if zero) characters 
+;             at the cursor or until the string contains X characters.
+;     \I\hh   Insert {register[U]|hh} spaces at the cursor or until the string
+;             contains X characters.
+;     \Ic\hh  Insert {register[U]|hh} {X's|spaces} at the cursor.
+;     \L\hh   Move the cursor {register[U]|hh} positions to the left (to the 
+;             beginning of the line if zero).
+;     \R\hh   Move the cursor {register[U]|hh} positions to the right (to the
+;             end of the line if zero).
+;    Note that numbers 0 thru 9 can be entered directly for single character
+;    embedded commands. For example, '\U\04' is the same as '\U4' and 
+;    '\=\01' is the same as '\=1'.
+;
+;  + Be very careful about whitespace in each format line. Characters other
+;    than '%s' specifiers and embedded commands and values will be sent
+;    exactly as they appear on the line. This means, for instance, that using
+;    tabs to make a line 'look right' in you favorite editor will cause
+;    tabs to be sent to the scoreboard instead of the equivalent number of
+;    spaces (probably not what you wanted).
+;
+; The format lines follow.
+
+;;Initialization
+\10\00Command=LayoutDraw;Clear=2;\0a
+
+;;TimeRunning
+; This is sent approximately 10 times per second.
+; Line codes:
+;  \00  No variable
+;  \01  Formatted time
+;  \02  Binary time in milliseconds (as a 4 byte little endian integer)
+; Setting register[0] to 1 in a format line will cause that line and
+; subsequent lines to only be sent once per second (when the second's 
+; digit changes) instead of approximately 10 times per second. Setting
+; register[0] to 0 will resume normal operation for remaining lines.
+;
+; The following line (if not commented) will tell ResulTV to change layouts.
+;\11\00Command=LayoutDraw;Name=Time;Clear=1;\0a
+\11\01\01T\02%15.15s\03\04
+
+;;TimeStopped
+; This is sent when the time is stopped by a beam break.
+; Line codes are identical to the TimeRunning line codes.
+;
+; The following line (if not commented) will tell ResulTV to change layouts.
+;\11\00Command=LayoutDraw;Name=Time;Clear=1;\0a
+\11\01\01T\02%15.15s\03\04
+; The following line will trigger event F1.
+; Note that the event is triggered after the data is sent. This is important
+; if the triggered field will use the TimeStopped data.
+\11\00Command=Trigger;Name=F1;Action=On;\0a
+
+;;TimeOfDay
+; This is sent when the 'Send time of day' option is checked in the
+; Scoreboard pull down menu.
+; Line codes are identical to the TimeRunning line codes.
+;
+; The following line (if not commented) will tell ResulTV to change layouts.
+;\11\00Command=LayoutDraw;Name=Time;Clear=1;\0a
+\11\01\=0\01T\02%15.15s\B4\I4\R0\03\04
+
+;;StartListHeader
+; This is sent once each time the scoreboard is updated with results. It
+; is sent before any result lines are sent.
+; Line codes:
+;  \00  No variable
+;  \01  OFFICIAL/UNOFFICIAL string
+;  \02  Event name
+;  \03  Wind
+;  \04  Event number
+;  \05  Round number
+;  \06  Heat number
+;  \07  AUTO/MANUAL start type
+;  \08  Number of participants
+;
+; The following line (if not commented) will tell ResulTV to change layouts.
+\13\01%s,
+\13\02%s,
+\13\03%s,
+\13\04%s,
+\13\05%s,
+\13\06%s,
+\13\04%s\L0000\X3\B0
+\13\05-%s-
+\13\06%s\L000\X2\B0\R0,
+\13\07%s,
+\13\08%s;
+
+;;StartListTrailer
+; This is sent once each time the scoreboard is updated with results. It
+; is sent after all result lines are sent.
+; Line codes are identical to the ResultsHeader line codes.
+\13\00\03\04
+
+;;StartList
+; This is sent once for each result line displayed on the scoreboard.
+; Line codes:
+;  \00  No variable
+;  \01  Place
+;  \02  Lane
+;  \03  Id
+;  \04  Name
+;  \05  Affiliation
+;  \06  Time
+;  \07  Delta Time
+;  \08  Cumulative Split Time
+;  \09  Last Split Time
+;  \0a  Laps To Go
+;  \0b  License
+;  \0c  ReacTime
+;  \0d  Speed
+;  \0e  Pace
+;  \0f  Best Split Time
+; Register[0] is initialized with the index of the current result line and
+; will range from 0 through PageSize - 1.
+\14\01%s,
+\14\02%s,
+\14\03%s,
+\14\04%s,
+\14\05%s,
+\14\06%s,
+\14\07%s,
+\14\08%s,
+\14\09%s,
+\14\0a%s,
+\14\0b%s,
+\14\0c%s,
+\14\0d%s,
+\14\0e%s,
+\14\0f%s;
+
+;;ResultsHeader
+; This is sent once each time the scoreboard is updated with results. It
+; is sent before any result lines are sent.
+; Line codes:
+;  \00  No variable
+;  \01  OFFICIAL/UNOFFICIAL string
+;  \02  Event name
+;  \03  Wind
+;  \04  Event number
+;  \05  Round number
+;  \06  Heat number
+;  \07  AUTO/MANUAL start type
+;  \08  Number of participants
+;
+; The following line (if not commented) will tell ResulTV to change layouts.
+
+\13\01%s,
+\13\02%s,
+\13\03%s,
+\13\04%s,
+\13\05%s,
+\13\06%s,
+\13\04%s\L0000\X3\B0
+\13\05-%s-
+\13\06%s\L000\X2\B0\R0,
+\13\07%s,
+\13\08%s;
+
+;;ResultsTrailer
+; This is sent once each time the scoreboard is updated with results. It
+; is sent after all result lines are sent.
+; Line codes are identical to the ResultsHeader line codes.
+;\13\00
+
+;;Result
+; This is sent once for each result line displayed on the scoreboard.
+; Line codes:
+;  \00  No variable
+;  \01  Place
+;  \02  Lane
+;  \03  Id
+;  \04  Name
+;  \05  Affiliation
+;  \06  Time
+;  \07  Delta Time
+;  \08  Cumulative Split Time
+;  \09  Last Split Time
+;  \0a  Laps To Go
+;  \0b  License
+;  \0c  ReacTime
+;  \0d  Speed
+;  \0e  Pace
+;  \0f  Best Split Time
+; Register[0] is initialized with the index of the current result line and
+; will range from 0 through PageSize - 1.
+\14\01%s,
+\14\02%s,
+\14\03%s,
+\14\04%s,
+\14\05%s,
+\14\06%s,
+\14\07%s,
+\14\08%s,
+\14\09%s,
+\14\0a%s,
+\14\0b%s,
+\14\0c%s,
+\14\0d%s,
+\14\0e%s,
+\14\0f%s;
+
+;;MessageHeader
+; This is sent once each time the scoreboard is updated with the message. It
+; is sent before any message lines are sent.
+; Line codes:
+;  \00  No variable
+;
+; The following line (if not commented) will tell ResulTV to change layouts.
+;\15\00Command=LayoutDraw;Name=Message;Clear=1;\0a
+\15\00\01M\02
+
+;;MessageTrailer
+; This is sent once each time the scoreboard is updated with the message. It
+; is sent after all message lines are sent.
+; Line codes are identical to the MessageHeader line codes.
+\15\00\03\04
+
+;;Message
+; This is sent once for each message line displayed on the scoreboard.
+; Line codes:
+;  \00  No variable
+;  \01  Text
+; Register[0] is initialized with the index of the current message line and
+; will range from 0 through <number of lines> - 1.
+\16\01%s\05

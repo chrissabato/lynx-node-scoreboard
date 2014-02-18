@@ -1,0 +1,116 @@
+<html>
+<head>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
+    
+    
+</head>
+<body>
+    <style>
+        body {
+        font-family: "trebuchet ms";
+        background-color:#98002e;
+        }
+        
+        #container{
+            width:800px;
+            margin: auto;
+            background-color:#fff;
+            padding:10px
+        }
+        
+        h3{
+            color:#98002e;
+        }
+        
+        table{
+            border-collapse:collapse;
+            width:100%
+        }
+        
+        th{
+            border-bottom:2px solid #afa081;
+            text-align:left;
+            font-size:12px;
+        }
+        
+        td{
+            border-bottom:1px solid #afa081;;
+            margin:0;
+            padding:4px 4px;
+            font-size:14px;
+        }
+        .place, .lane, .number, .laps{
+            text-align:center
+        }
+        
+        .time, .delta, .cum, .last{
+            text-align:right;
+        }
+    </style>
+    
+    <script>
+        var socket = io.connect();
+        
+        
+        socket.on('message', function(message){
+            
+            var htmlStr =''; 
+            var obj = jQuery.parseJSON(message);
+
+            var athleteNum = 0;
+            
+            for( var key in obj ) {
+                if( obj.hasOwnProperty(key) ) {
+                    athleteNum++;
+                }
+            }
+            console.log(athleteNum);
+                    
+            
+            
+            
+            var eventName = obj[0][1];
+            $('#eventName').text(eventName);
+
+            
+            
+            htmlStr = htmlStr + '<table id="results">';
+           htmlStr = htmlStr + '<tr><th class="place">Place</th><th class="lane">Hip</th><th class="number">#</th><th class="name">Name</th><th class="team">Team</th><th class="time">Final</th><th class="delta">Delta</th><th class="cum">Cum</th><th class="last">Last</th><th class="laps">Laps</th></tr>';
+            
+            
+            
+            for(var i=1;i<athleteNum;i++){
+                
+                if(obj[i][2]==',' || obj[i][2] === undefined){
+                    
+                }
+                    else    
+                {
+                    htmlStr = htmlStr + "<tr>";                
+                        htmlStr = htmlStr + '<td class="place">' + obj[i][0] + "</td>";
+                        htmlStr = htmlStr + '<td class="lane">' + obj[i][1] + "</td>";
+                        htmlStr = htmlStr + '<td class="number">' + obj[i][2] + "</td>";
+                        htmlStr = htmlStr + '<td class="name">' + obj[i][3] + "</td>";
+                        htmlStr = htmlStr + '<td class="team">' + obj[i][4] + "</td>";
+                        htmlStr = htmlStr + '<td class="time">' + obj[i][5] + "</td>";
+                        htmlStr = htmlStr + '<td class="delta">' + obj[i][6] + "</td>";
+                        htmlStr = htmlStr + '<td class="cum">' + obj[i][7] + "</td>";
+                        htmlStr = htmlStr + '<td class="last">' + obj[i][8] + "</td>";
+                        htmlStr = htmlStr + '<td class="laps">' + obj[i][9] + "</td>";
+                    htmlStr = htmlStr + "</tr>";  
+                }
+            }
+             
+            htmlStr = htmlStr + '<table>';
+            
+            $('#results').html(htmlStr);
+        });
+    </script>
+    <div id="container">
+        <h3 id="eventName"></h3>
+        <div id="results"></div>
+        <div id="test"></div>
+    </div>
+</body>
+</html>
