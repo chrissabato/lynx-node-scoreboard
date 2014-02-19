@@ -2,8 +2,6 @@
 <head>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.js"></script>
-    
-    
 </head>
 <body>
     <style>
@@ -51,15 +49,13 @@
     
     <script>
         var socket = io.connect();
-        
-        
-        socket.on('message', function(message){
-            
-            var htmlStr =''; 
-            var obj = jQuery.parseJSON(message);
 
+        socket.on('message', function(message){        
+            var obj = jQuery.parseJSON(message);
+            var htmlStr =''; 
             var athleteNum = 0;
-            
+           
+            // count elements in obj
             for( var key in obj ) {
                 if( obj.hasOwnProperty(key) ) {
                     athleteNum++;
@@ -67,21 +63,33 @@
             }
             console.log(athleteNum);
                     
-            
-            
-            
+            // update page with event name
             var eventName = obj[0][1];
             $('#eventName').text(eventName);
 
             
-            
+            // start building html for results table
             htmlStr = htmlStr + '<table id="results">';
-           htmlStr = htmlStr + '<tr><th class="place">Place</th><th class="lane">Hip</th><th class="number">#</th><th class="name">Name</th><th class="team">Team</th><th class="time">Final</th><th class="delta">Delta</th><th class="cum">Cum</th><th class="last">Last</th><th class="laps">Laps</th></tr>';
             
-            
-            
-            for(var i=1;i<athleteNum;i++){
-                
+            // results table header
+            htmlStr = htmlStr + '<tr>'+
+                '<th class="place">Place</th>'+
+                '<th class="lane">Hip</th>'+
+                '<th class="number">#</th>'+
+                '<th class="name">Name</th>'+
+                '<th class="team">Team</th>'+
+                '<th class="time">Final</th>'+
+                '<th class="delta">Delta</th>'+
+                '<th class="cum">Cum</th>'+
+                '<th class="last">Last</th>'+
+                '<th class="laps">Laps</th></tr>';
+                     
+            for(var i=1;i<athleteNum;i++){ 
+                /* 
+                Not sure why this is nessesary...
+                A seemingly random number of results with ',' are being sent. 
+                Come events have a traling result line with all elements undefined 
+                */
                 if(obj[i][2]==',' || obj[i][2] === undefined){
                     
                 }
@@ -101,9 +109,9 @@
                     htmlStr = htmlStr + "</tr>";  
                 }
             }
-             
             htmlStr = htmlStr + '<table>';
             
+            // update page with generated table
             $('#results').html(htmlStr);
         });
     </script>

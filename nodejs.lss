@@ -6,7 +6,7 @@
 ;
 ; Written by Kirk Sigel
 ;
-; script updated for FinishLynx 4 by Todd Chamoy 11/20/2001
+; script updated for Node.js web scoreboard by Christopher Sabato 2014
 ;
 ; Notes:
 ;  + Empty lines and lines that start with a semicolon are ignored.
