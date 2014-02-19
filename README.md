@@ -1,8 +1,8 @@
 lynx-node-scoreboard
 ====================
-Finishlynx Node.js web scoreboard
+Node.js Web Scoreboard for FinishLynx
 
-Node Setup
+###Node Setup###
 --------------------
 + install node.js
 + add node to PATH (windows installed doen't do this by default)
