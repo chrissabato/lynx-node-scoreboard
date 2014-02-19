@@ -8,6 +8,7 @@ var udpServer = dgram.createSocket("udp4");
 var http = require('http');
 var fs = require('fs');
 var io = require('socket.io');
+var os = require( 'os' );
 
 
 // Defining some variables
@@ -82,7 +83,7 @@ var htmlServer = http.createServer(function(request, response) {
 });
 
 htmlServer.listen(8000);
-console.log("HTML Server started");
+console.log("HTML server started on: " + getIP());
 
 // start up socket.io for transmitting data to the webpage
 var serv_io = io.listen(htmlServer, { log: false });
@@ -92,4 +93,26 @@ serv_io.sockets.on('connection', function(socket){
         socket.send(jsonResults);
     }, 1000);
 });
+
+
+/*  
+************************************
+** Get Ip Addresses               **
+************************************
+*/
+function getIP(){
+    var os = require( 'os' );
+    var networkConfig = os.networkInterfaces( );    
+    var ipList ='';    
+    for (var name in networkConfig) {
+        networks = networkConfig[name];    
+        for (var name in networks) {        
+            details = networks[name];       
+            if (details['family'] == "IPv4"){    
+                ipList = ipList + details['address'] + " ";
+            }
+        }
+    }
+    return ipList;
+}
 
