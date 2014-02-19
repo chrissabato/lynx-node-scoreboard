@@ -15,7 +15,7 @@ Node.js Web Scoreboard for FinishLynx
     + CD c:\node
     + npm install socket.io
     
-FinishLynx Setup
+###FinishLynx Setup
 --------------------
 + copy nodejs.lss into the Finishlynx directory
 + setup scoreboard in FinishLynx
@@ -32,7 +32,7 @@ FinishLynx Setup
   + Max: 24
   + Include first name: checked
   
-Run Server
+###Run Server###
 --------------------
 + start the node upd/http server
   + node lynx.js
