@@ -6,8 +6,9 @@
 <body>
     <style>
         body {
-        font-family: "trebuchet ms";
+        font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
         background-color:#98002e;
+        color:#555;
         }
         
         #container{
@@ -19,8 +20,29 @@
         
         h3{
             color:#98002e;
+            padding:0;
+            margin:0;
         }
-        
+        h4{
+            text-transform:uppercase;
+            padding:0;
+            margin:0 0 10px 0;
+            color:#afa081;
+            font-weight:normal;
+            
+        }
+        h5{
+            font-weight:normal;
+            padding:2px;
+            margin:10px 0;
+            border-top: 1px solid #afa081;
+            border-bottom: 1px solid #afa081;
+            font-size:10px;
+
+        }
+        h5 span{
+            margin: 0 40px 0 0;
+        }
         table{
             border-collapse:collapse;
             width:100%
@@ -53,8 +75,11 @@
         socket.on('message', function(message){        
             var obj = jQuery.parseJSON(message);
             var htmlStr =''; 
-            var athleteNum = 0;
+            
            
+            /*
+            
+            var athleteNum = 0;
             // count elements in obj
             for( var key in obj ) {
                 if( obj.hasOwnProperty(key) ) {
@@ -62,11 +87,38 @@
                 }
             }
             console.log(athleteNum);
-                    
+            */
+            
+            
             // update page with event name
             var eventName = obj[0][1];
             $('#eventName').text(eventName);
 
+            // update page with wind
+            var wind = obj[0][2];
+            $('#wind').text("Wind: " + wind);
+            
+            // update page with event number
+            var event = obj[0][3];
+            $('#event').text("Event: " + event);
+            
+            // update page with round number
+            var round = obj[0][4];
+            $('#round').text("Round: " + round);
+            
+            // update page with heat number
+            var heat = obj[0][5];
+            $('#heat').text("Heat: " + heat);
+            
+            // update page with participants
+            var participants = obj[0][8];
+            $('#participants').text("Participants: " + participants);
+            
+            // determine number of results to display upto 24
+            var displayNum = 24;
+            if(participants<24)
+                displayNum = participants;
+            
             
             // start building html for results table
             htmlStr = htmlStr + '<table id="results">';
@@ -84,30 +136,19 @@
                 '<th class="last">Last</th>'+
                 '<th class="laps">Laps</th></tr>';
                      
-            for(var i=1;i<athleteNum;i++){ 
-                /* 
-                Not sure why this is nessesary...
-                A seemingly random number of results with ',' are being sent. 
-                Come events have a traling result line with all elements undefined 
-                */
-                if(obj[i][2]==',' || obj[i][2] === undefined){
-                    
-                }
-                    else    
-                {
-                    htmlStr = htmlStr + "<tr>";                
-                        htmlStr = htmlStr + '<td class="place">' + obj[i][0] + "</td>";
-                        htmlStr = htmlStr + '<td class="lane">' + obj[i][1] + "</td>";
-                        htmlStr = htmlStr + '<td class="number">' + obj[i][2] + "</td>";
-                        htmlStr = htmlStr + '<td class="name">' + obj[i][3] + "</td>";
-                        htmlStr = htmlStr + '<td class="team">' + obj[i][4] + "</td>";
-                        htmlStr = htmlStr + '<td class="time">' + obj[i][5] + "</td>";
-                        htmlStr = htmlStr + '<td class="delta">' + obj[i][6] + "</td>";
-                        htmlStr = htmlStr + '<td class="cum">' + obj[i][7] + "</td>";
-                        htmlStr = htmlStr + '<td class="last">' + obj[i][8] + "</td>";
-                        htmlStr = htmlStr + '<td class="laps">' + obj[i][9] + "</td>";
-                    htmlStr = htmlStr + "</tr>";  
-                }
+            for(var i=1;i<=displayNum;i++){ 
+                htmlStr = htmlStr + "<tr>";                
+                    htmlStr = htmlStr + '<td class="place">' + obj[i][0] + "</td>";
+                    htmlStr = htmlStr + '<td class="lane">' + obj[i][1] + "</td>";
+                    htmlStr = htmlStr + '<td class="number">' + obj[i][2] + "</td>";
+                    htmlStr = htmlStr + '<td class="name">' + obj[i][3] + "</td>";
+                    htmlStr = htmlStr + '<td class="team">' + obj[i][4] + "</td>";
+                    htmlStr = htmlStr + '<td class="time">' + obj[i][5] + "</td>";
+                    htmlStr = htmlStr + '<td class="delta">' + obj[i][6] + "</td>";
+                    htmlStr = htmlStr + '<td class="cum">' + obj[i][7] + "</td>";
+                    htmlStr = htmlStr + '<td class="last">' + obj[i][8] + "</td>";
+                    htmlStr = htmlStr + '<td class="laps">' + obj[i][9] + "</td>";
+                htmlStr = htmlStr + "</tr>";     
             }
             htmlStr = htmlStr + '<table>';
             
@@ -116,7 +157,17 @@
         });
     </script>
     <div id="container">
-        <h3 id="eventName"></h3>
+        <h4 id="venue">Charles Bowles Track | Willamette University | Salem, Oregon</h4>
+        <h3 id="eventName">Men's 100 Dash</h3>
+        <h5 id="details">
+            <span id="event">Event: 0</span>
+            <span id="round">Round: 0</span>
+            <span id="heat">Heat: 0</span>
+            <span id="wind"></span>
+            <span id="participants">Participants: 0</span>
+            <span id="update-time"></span>
+        </h5>
+        
         <div id="results"></div>
         <div id="test"></div>
     </div>
