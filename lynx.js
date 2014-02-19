@@ -8,7 +8,7 @@ var udpServer = dgram.createSocket("udp4");
 var http = require('http');
 var fs = require('fs');
 var io = require('socket.io');
-var os = require( 'os' );
+
 
 
 // Defining some variables
@@ -81,7 +81,6 @@ var htmlServer = http.createServer(function(request, response) {
     response.writeHeader(200, {"Content-Type": "text/html"});
     response.end(htmlPage);
 });
-
 htmlServer.listen(8000);
 console.log("HTML server started on: " + getIP());
 
