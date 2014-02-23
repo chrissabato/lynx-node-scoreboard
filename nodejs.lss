@@ -6,7 +6,7 @@
 ;
 ; Written by Kirk Sigel
 ;
-; script updated for Node.js web scoreboard by Christopher Sabato 2014
+; script updated for FinishLynx 4 by Todd Chamoy 11/20/2001
 ;
 ; Notes:
 ;  + Empty lines and lines that start with a semicolon are ignored.
@@ -182,7 +182,7 @@
 ;
 ; The following line (if not commented) will tell ResulTV to change layouts.
 ;\11\00Command=LayoutDraw;Name=Time;Clear=1;\0a
-\11\01\01T\02%15.15s\03\04
+\11\01\%15.15s
 
 ;;TimeStopped
 ; This is sent when the time is stopped by a beam break.

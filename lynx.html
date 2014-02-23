@@ -67,6 +67,17 @@
         .time, .delta, .cum, .last{
             text-align:right;
         }
+        #clock{
+            float:right;
+            background-color:#ffd700;
+            font-size: 30px;
+            font-weight:bold;
+            font-family: "courier new";
+            text-align:center;
+            color: #000000;
+            padding: 5px 5px 3px 5px;
+            width:150px;
+        }
     </style>
     
     <script>
@@ -76,49 +87,41 @@
             var obj = jQuery.parseJSON(message);
             var htmlStr =''; 
             
-           
-            /*
-            
-            var athleteNum = 0;
-            // count elements in obj
-            for( var key in obj ) {
-                if( obj.hasOwnProperty(key) ) {
-                    athleteNum++;
-                }
-            }
-            console.log(athleteNum);
-            */
-            
             
             // update page with event name
-            var eventName = obj[0][1];
+            var eventName = obj[1][1];
             $('#eventName').text(eventName);
 
             // update page with wind
-            var wind = obj[0][2];
+            var wind = obj[1][2];
             $('#wind').text("Wind: " + wind);
             
             // update page with event number
-            var event = obj[0][3];
+            var event = obj[1][3];
             $('#event').text("Event: " + event);
             
             // update page with round number
-            var round = obj[0][4];
+            var round = obj[1][4];
             $('#round').text("Round: " + round);
             
             // update page with heat number
-            var heat = obj[0][5];
+            var heat = obj[1][5];
             $('#heat').text("Heat: " + heat);
             
             // update page with participants
-            var participants = obj[0][8];
+            var participants = obj[1][8];
             $('#participants').text("Participants: " + participants);
             
             // determine number of results to display upto 24
             var displayNum = 24;
-            if(participants<24)
+            if(participants<24){
                 displayNum = participants;
+                displayNum++;
+            }
             
+            //update clock
+            var clock = obj[0];
+            $('#clock').text(clock);
             
             // start building html for results table
             htmlStr = htmlStr + '<table id="results">';
@@ -136,7 +139,7 @@
                 '<th class="last">Last</th>'+
                 '<th class="laps">Laps</th></tr>';
                      
-            for(var i=1;i<=displayNum;i++){ 
+            for(var i=2;i<=displayNum;i++){ 
                 htmlStr = htmlStr + "<tr>";                
                     htmlStr = htmlStr + '<td class="place">' + obj[i][0] + "</td>";
                     htmlStr = htmlStr + '<td class="lane">' + obj[i][1] + "</td>";
@@ -157,15 +160,15 @@
         });
     </script>
     <div id="container">
+        <div id="clock">00:00.00</div>
         <h4 id="venue">Charles Bowles Track | Willamette University | Salem, Oregon</h4>
-        <h3 id="eventName">Men's 100 Dash</h3>
+        <h3 id="eventName">No Event Selected</h3>
         <h5 id="details">
             <span id="event">Event: 0</span>
             <span id="round">Round: 0</span>
             <span id="heat">Heat: 0</span>
             <span id="wind"></span>
             <span id="participants">Participants: 0</span>
-            <span id="update-time"></span>
         </h5>
         
         <div id="results"></div>

@@ -4,7 +4,8 @@
 ************************************
 */
 var dgram = require("dgram");
-var udpServer = dgram.createSocket("udp4");
+var udpResultsServer = dgram.createSocket("udp4");
+var udpTimeServer = dgram.createSocket("udp4");
 var http = require('http');
 var fs = require('fs');
 var io = require('socket.io');
@@ -16,23 +17,24 @@ var htmlPage;
 var jsonResults;
 var tempResults = '';
 var finalResults = '';
-
+var time = '0.0';
+var r = new Array();
 
 /*  
 ************************************
-** UDP Server                     **
+** UDP Results Server             **
 ************************************
 */
 
 // start UDP server listening on port 43278
-udpServer.on("listening", function () {
-    var address = udpServer.address();
+udpResultsServer.on("listening", function () {
+    var address = udpResultsServer.address();
     console.log("UDP server listening on port: " + address.port);
 });
-udpServer.bind(43278);
+udpResultsServer.bind(43278);
 
 // process datagram
-udpServer.on("message", function (msg, rinfo) { 
+udpResultsServer.on("message", function (msg, rinfo) { 
     // check if datagram is full (size=536)
     if(rinfo.size == 536){
         tempResults = tempResults + msg.toString();
@@ -48,14 +50,35 @@ udpServer.on("message", function (msg, rinfo) {
                 r.splice(i,1);                  // if empty remove from array
             }
             else {
-                //console.log(r[i]);
-                r[i]= r[i].split(',');          // if line is not empty split the line bt ','
-                
+                r[i]= r[i].split(',');          // if line is not empty split the line bt ','               
             }
         }
-        jsonResults = JSON.stringify(r);        // convert final array into a json string
+        r.unshift(time);
         tempResults ='';                        // reset tempResults variable to prepare for next datagram
     }
+});
+
+
+/*  
+************************************
+** UDP Time Server                **
+************************************
+*/
+
+// start UDP server listening on port 43279
+udpTimeServer.on("listening", function () {
+    var address = udpTimeServer.address();
+    console.log("UDP server listening on port: " + address.port);
+});
+udpTimeServer.bind(43279);
+
+// process datagram
+udpTimeServer.on("message", function (clock, rinfo) { 
+    
+   time = clock.toString();
+   time = time.trim();
+   r[0]=time;
+    
 });
 
 
@@ -89,7 +112,8 @@ var serv_io = io.listen(htmlServer, { log: false });
 serv_io.sockets.on('connection', function(socket){
     //send data to client
     setInterval(function(){
-        socket.send(jsonResults);
+        jsonResults = JSON.stringify(r);        // convert final array into a json string
+        socket.send(jsonResults);               // sent json results via socket
     }, 1000);
 });
 
