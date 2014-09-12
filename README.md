@@ -9,7 +9,7 @@ Node.js Web Scoreboard for FinishLynx
 
 ###Node Setup###
 --------------------
-+ install node.js
++ install [node.js](http://nodejs.org/)
   + add node to PATH (windows installer sometimes doen't do this by default)
     + open cmd prompt as administrator
     + SET PATH=C:\Program Files\Nodejs;%PATH%
@@ -18,7 +18,7 @@ Node.js Web Scoreboard for FinishLynx
   + must be in the same directory as the node project
   + from a command prompt
     + CD c:\node
-    + npm install socket.io
+    + npm install [socket.io](http://socket.io/)
     
 ###FinishLynx Setup
 --------------------
